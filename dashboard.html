@@ -474,6 +474,248 @@
 
       </div>
 
+      <!-- ── Reports Table ──────────────────────────────────────────────── -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+
+        <!-- Section header -->
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-4">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent Reports</h2>
+            <!-- Search -->
+            <div class="relative">
+              <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" placeholder="Search reports..."
+                class="pl-8 pr-3 py-1.5 w-48 focus:w-64 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-[width] duration-200">
+            </div>
+          </div>
+          <!-- Tab switcher -->
+          <div id="table-tabs" class="flex items-center gap-1">
+            <button class="tab-btn px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white transition-colors" data-tab="all">All</button>
+            <button class="tab-btn px-3 py-1 rounded-full text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" data-tab="active">Active</button>
+            <button class="tab-btn px-3 py-1 rounded-full text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" data-tab="archived">Archived</button>
+          </div>
+        </div>
+
+        <!-- Table scroll wrapper -->
+        <div class="overflow-x-auto">
+          <table id="reports-table" class="w-full min-w-[720px]">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                <th class="px-5 py-3 text-left w-10 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">#</th>
+                <th class="px-5 py-3 text-left">
+                  <button class="sort-btn inline-flex items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-col="name">
+                    Report Name <span class="sort-icon font-normal normal-case tracking-normal opacity-60">&#8597;</span>
+                  </button>
+                </th>
+                <th class="px-5 py-3 text-left">
+                  <button class="sort-btn inline-flex items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-col="type">
+                    Type <span class="sort-icon font-normal normal-case tracking-normal opacity-60">&#8597;</span>
+                  </button>
+                </th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Owner</th>
+                <th class="px-5 py-3 text-left">
+                  <button class="sort-btn inline-flex items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-col="date">
+                    Date <span class="sort-icon font-normal normal-case tracking-normal opacity-60">&#8597;</span>
+                  </button>
+                </th>
+                <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Q1 Revenue Summary" data-type="Summary" data-date="2026-04-12">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">1</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Q1 Revenue Summary</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Summary</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Published</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Sarah K.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 12, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="1" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-1" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="User Growth Audit" data-type="Audit" data-date="2026-04-15">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">2</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">User Growth Audit</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Audit</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Draft</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">James T.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 15, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="2" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-2" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Ticket Resolution" data-type="Detailed" data-date="2026-04-16">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">3</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Ticket Resolution</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Detailed</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Published</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Maria L.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 16, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="3" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-3" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Export Logs - March" data-type="Export" data-date="2026-03-31">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">4</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Export Logs - March</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Export</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Archived</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Admin</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Mar 31, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="4" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-4" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Weekly Active Users" data-type="Summary" data-date="2026-04-18">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">5</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Weekly Active Users</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Summary</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Published</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Sarah K.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 18, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="5" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-5" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Infrastructure Report" data-type="Detailed" data-date="2026-04-20">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">6</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Infrastructure Report</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Detailed</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Draft</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">James T.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 20, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="6" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-6" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="Compliance Audit Q1" data-type="Audit" data-date="2026-04-21">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">7</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">Compliance Audit Q1</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Audit</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Published</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Maria L.</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 21, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="7" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-7" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-name="April Summary Draft" data-type="Summary" data-date="2026-04-25">
+                <td class="px-5 py-3.5 text-sm text-gray-400 dark:text-gray-500">8</td>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-gray-100">April Summary Draft</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Summary</td>
+                <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Draft</span></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Admin</td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">Apr 25, 2026</td>
+                <td class="px-5 py-3.5 text-right"><div class="relative inline-block">
+                  <button class="row-action-btn w-7 h-7 rounded-md inline-flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-row="8" aria-label="Row actions">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div id="dd-row-8" class="dd-panel absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-40 overflow-hidden py-1">
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">View</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Edit</a>
+                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Download</a>
+                    <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+                    <a href="#" class="block px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">Delete</a>
+                  </div>
+                </div></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 flex-wrap">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Showing 1–8 of 8 results</p>
+          <div class="flex items-center gap-2">
+            <button disabled
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-300 dark:text-gray-600 cursor-not-allowed select-none">
+              Prev
+            </button>
+            <span class="text-sm text-gray-500 dark:text-gray-400 px-1">Page 1 of 1</span>
+            <button disabled
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-300 dark:text-gray-600 cursor-not-allowed select-none">
+              Next
+            </button>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </main>
 
@@ -587,22 +829,27 @@
       localStorage.setItem('sidebar', collapsed ? 'collapsed' : 'expanded');
     });
 
-    // ── Dropdowns ─────────────────────────────────────────────────────────
-    // Map trigger button id → panel id
+    // ── Dropdown helpers ───────────────────────────────────────────────────
     const DROPDOWNS = {
       'btn-notif':  'dd-notif',
       'btn-user':   'dd-user',
       'btn-filter': 'dd-filter',
     };
 
-    function closeAllDropdowns(exceptPanelId) {
-      Object.values(DROPDOWNS).forEach(panelId => {
-        if (panelId !== exceptPanelId) {
-          document.getElementById(panelId).classList.remove('dd-open');
-        }
-      });
+    function closeAllDropdowns() {
+      Object.values(DROPDOWNS).forEach(id => document.getElementById(id).classList.remove('dd-open'));
     }
 
+    let activeRowPanel = null;
+
+    function closeAllRowActions() {
+      if (activeRowPanel) {
+        activeRowPanel.classList.remove('dd-open');
+        activeRowPanel = null;
+      }
+    }
+
+    // Navbar / filter dropdowns
     Object.entries(DROPDOWNS).forEach(([btnId, panelId]) => {
       const btn = document.getElementById(btnId);
       const panel = document.getElementById(panelId);
@@ -611,20 +858,104 @@
         e.stopPropagation();
         const isOpen = panel.classList.contains('dd-open');
         closeAllDropdowns();
+        closeAllRowActions();
         if (!isOpen) panel.classList.add('dd-open');
       });
 
-      // Clicks inside the panel don't bubble to document
       panel.addEventListener('click', e => e.stopPropagation());
     });
 
-    // Filter "Apply" closes its own dropdown
     document.getElementById('btn-filter-apply').addEventListener('click', () => {
       document.getElementById('dd-filter').classList.remove('dd-open');
     });
 
-    // Outside click closes everything
-    document.addEventListener('click', () => closeAllDropdowns());
+    // ── Row action dropdowns ───────────────────────────────────────────────
+    document.getElementById('reports-table').addEventListener('click', e => {
+      const btn = e.target.closest('.row-action-btn');
+      if (!btn) return;
+      e.stopPropagation();
+      const panel = document.getElementById('dd-row-' + btn.dataset.row);
+      const isOpen = panel.classList.contains('dd-open');
+      closeAllDropdowns();
+      closeAllRowActions();
+      if (!isOpen) {
+        panel.classList.add('dd-open');
+        activeRowPanel = panel;
+      }
+    });
+
+    // Prevent clicks inside row panels from closing them
+    document.querySelectorAll('[id^="dd-row-"]').forEach(p => {
+      p.addEventListener('click', e => e.stopPropagation());
+    });
+
+    // Global outside-click: close everything
+    document.addEventListener('click', () => {
+      closeAllDropdowns();
+      closeAllRowActions();
+    });
+
+    // ── Tab switcher ───────────────────────────────────────────────────────
+    document.getElementById('table-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('text-gray-500', 'dark:text-gray-400');
+      });
+      btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+      btn.classList.add('bg-indigo-600', 'text-white');
+    });
+
+    // ── Table sort ─────────────────────────────────────────────────────────
+    const tbody = document.getElementById('table-body');
+    // Snapshot original row order for reset
+    const originalRows = Array.from(tbody.querySelectorAll('tr'));
+    let sortCol = null;
+    let sortDir = null; // 'asc' | 'desc' | null
+
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const col = btn.dataset.col;
+
+        // Cycle: neutral → asc → desc → neutral
+        if (sortCol !== col) {
+          sortCol = col;
+          sortDir = 'asc';
+        } else {
+          if (sortDir === 'asc')       sortDir = 'desc';
+          else if (sortDir === 'desc') { sortDir = null; sortCol = null; }
+          else                         { sortDir = 'asc'; sortCol = col; }
+        }
+
+        // Reset all header buttons
+        document.querySelectorAll('.sort-btn').forEach(b => {
+          b.querySelector('.sort-icon').textContent = '\u2195';
+          b.classList.remove('text-indigo-600', 'dark:text-indigo-400');
+          b.classList.add('text-gray-500', 'dark:text-gray-400');
+        });
+
+        if (sortDir === null) {
+          // Restore original DOM order
+          originalRows.forEach(r => tbody.appendChild(r));
+          return;
+        }
+
+        // Highlight active header
+        btn.querySelector('.sort-icon').textContent = sortDir === 'asc' ? '\u2191' : '\u2193';
+        btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+        btn.classList.add('text-indigo-600', 'dark:text-indigo-400');
+
+        // Sort and re-insert rows
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+          const av = (a.dataset[col] || '').toLowerCase();
+          const bv = (b.dataset[col] || '').toLowerCase();
+          return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      });
+    });
 
     // ── Modal ──────────────────────────────────────────────────────────────
     const modalBackdrop = document.getElementById('modal-backdrop');
@@ -632,8 +963,8 @@
 
     function openModal() {
       closeAllDropdowns();
+      closeAllRowActions();
       modalBackdrop.classList.remove('hidden');
-      // Double RAF: first tick removes hidden (display:none), second tick triggers transition
       requestAnimationFrame(() => requestAnimationFrame(() => {
         modalBackdrop.classList.add('modal-open');
       }));
@@ -649,8 +980,6 @@
     document.getElementById('btn-new-report').addEventListener('click', openModal);
     document.getElementById('btn-modal-x').addEventListener('click', closeModal);
     document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
-
-    // Backdrop click closes modal; card click does not
     modalBackdrop.addEventListener('click', closeModal);
     modalCard.addEventListener('click', e => e.stopPropagation());
   </script>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — CommandCenter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 350ms ease forwards; }
+    .fade-up-1 { animation-delay: 50ms;  opacity: 0; }
+    .fade-up-2 { animation-delay: 120ms; opacity: 0; }
+    .fade-up-3 { animation-delay: 190ms; opacity: 0; }
+    .fade-up-4 { animation-delay: 260ms; opacity: 0; }
+
+    /* sidebar */
+    #sidebar { transition: width 250ms ease; }
+    #sidebar .nav-label { transition: opacity 150ms ease, width 150ms ease; }
+    #sidebar.collapsed .nav-label { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; }
+    #sidebar.collapsed .nav-icon { margin: 0 auto; }
+    #sidebar.collapsed #chevron { transform: rotate(180deg); }
+
+    /* mobile sidebar */
+    @media (max-width: 1023px) {
+      #sidebar { position: fixed; top: 56px; left: 0; height: calc(100% - 56px); transform: translateX(-100%); z-index: 40; width: 240px !important; }
+      #sidebar.mobile-open { transform: translateX(0); }
+      #main-content { margin-left: 0 !important; }
+    }
+
+    /* dropdown */
+    .dd-panel {
+      visibility: hidden; opacity: 0; transform: translateY(-6px) scale(0.97);
+      transition: opacity 150ms ease, transform 150ms ease, visibility 0s linear 150ms;
+      pointer-events: none;
+    }
+    .dd-panel.open {
+      visibility: visible; opacity: 1; transform: translateY(0) scale(1);
+      transition: opacity 150ms ease, transform 150ms ease, visibility 0s;
+      pointer-events: auto;
+    }
+
+    /* chart tooltip */
+    .chart-tooltip { position: absolute; background: rgba(17,24,39,0.9); color: #f9fafb; padding: 6px 10px; border-radius: 6px; font-size: 12px; pointer-events: none; display: none; white-space: nowrap; }
+
+    /* calendar heatmap */
+    .heat-cell { width: 14px; height: 14px; border-radius: 2px; }
+
+    /* range picker tab */
+    .range-tab { transition: background 150ms, color 150ms; }
+    .range-tab.active { background: #4f46e5; color: #fff; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 font-sans antialiased">
+
+<!-- BACKDROP (mobile) -->
+<div id="backdrop" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="closeMobileSidebar()"></div>
+
+<!-- NAVBAR -->
+<nav class="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex items-center px-4 gap-3">
+  <!-- hamburger -->
+  <button id="hamburger" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500" onclick="openMobileSidebar()">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <!-- logo -->
+  <a href="dashboard.html" class="hidden lg:flex items-center gap-2 font-semibold text-gray-900 dark:text-white tracking-tight">
+    <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">CC</div>
+    CommandCenter
+  </a>
+  <a href="dashboard.html" class="lg:hidden flex items-center justify-center w-7 h-7 bg-indigo-600 rounded-lg text-white text-xs font-bold">CC</a>
+  <div class="flex-1"></div>
+  <!-- bell -->
+  <div class="relative">
+    <button id="btn-bell" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500">
+      <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+    </button>
+    <div id="dd-bell" class="dd-panel absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
+      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 font-semibold text-sm">Notifications</div>
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span><div><p>Analytics export completed</p><p class="text-gray-400 text-xs mt-0.5">5 min ago</p></div></div>
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span><div><p>User milestone: 4,000 active</p><p class="text-gray-400 text-xs mt-0.5">1 hr ago</p></div></div>
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-amber-500 shrink-0"></span><div><p>Report #14 needs review</p><p class="text-gray-400 text-xs mt-0.5">3 hr ago</p></div></div>
+      </div>
+      <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-800"><a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">View all notifications</a></div>
+    </div>
+  </div>
+  <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+  <!-- avatar -->
+  <div class="relative">
+    <button id="btn-avatar" class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-semibold flex items-center justify-center focus-visible:ring-2 focus-visible:ring-indigo-500">SK</button>
+    <div id="dd-avatar" class="dd-panel absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 text-sm">
+      <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">My Profile</a>
+      <a href="settings.html" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Account Settings</a>
+      <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Switch Workspace</a>
+      <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+      <a href="#" class="block px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800">Sign Out</a>
+    </div>
+  </div>
+  <!-- theme toggle -->
+  <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500">
+    <svg id="icon-sun" class="w-5 h-5 text-gray-500 dark:text-gray-400 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg id="icon-moon" class="w-5 h-5 text-gray-500 dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  </button>
+</nav>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="fixed top-14 left-0 h-[calc(100vh-56px)] w-60 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-40 overflow-hidden">
+  <div class="p-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <span class="nav-label text-xs font-semibold uppercase tracking-widest text-gray-400 pl-1">Menu</span>
+    <button id="sidebar-toggle" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500">
+      <svg id="chevron" class="w-4 h-4 text-gray-400 transition-transform duration-250" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+  </div>
+  <nav class="flex-1 p-2 space-y-0.5 overflow-y-auto">
+    <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    <a href="analytics.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-sm font-medium relative">
+      <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-600 dark:bg-indigo-400 rounded-r"></span>
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span class="nav-label">Analytics</span>
+    </a>
+    <a href="users.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m8-5.13a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span class="nav-label">Users</span>
+    </a>
+    <a href="reports.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span class="nav-label">Reports</span>
+    </a>
+    <a href="settings.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span class="nav-label">Settings</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main id="main-content" style="margin-left:240px;" class="min-h-screen pt-14 transition-[margin] duration-250">
+  <div class="p-6 max-w-screen-2xl mx-auto space-y-6">
+
+    <!-- PAGE HEADER -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 fade-up fade-up-1">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Performance overview · April 2026</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Date range tabs -->
+        <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1 gap-1 text-xs font-medium">
+          <button class="range-tab px-3 py-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700" data-range="7d">7d</button>
+          <button class="range-tab active px-3 py-1.5 rounded-md" data-range="30d">30d</button>
+          <button class="range-tab px-3 py-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700" data-range="90d">90d</button>
+          <button class="range-tab px-3 py-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700" data-range="1y">1y</button>
+        </div>
+        <button class="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 fade-up fade-up-2">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 border-l-4 border-l-indigo-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-9 h-9 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400">&#8593; 12.4%</span>
+        </div>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">$48,295</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Total Revenue</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 border-l-4 border-l-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m8-5.13a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </div>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400">&#8593; 8.1%</span>
+        </div>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">3,842</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Active Users</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 border-l-4 border-l-amber-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-9 h-9 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </div>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400">&#8595; 3.2%</span>
+        </div>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">68.4%</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Avg. Session Rate</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 border-l-4 border-l-sky-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-9 h-9 bg-sky-100 dark:bg-sky-900/50 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400">&#8593; 5.7%</span>
+        </div>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">4m 22s</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Avg. Session Time</p>
+      </div>
+    </div>
+
+    <!-- ROW 1: Line chart + Donut -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 fade-up fade-up-3">
+      <!-- Line chart -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="font-semibold text-gray-900 dark:text-white text-sm">Revenue & Users Over Time</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Last 30 days</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-indigo-500 inline-block rounded"></span>Revenue</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-emerald-500 inline-block rounded"></span>Users</span>
+          </div>
+        </div>
+        <div class="relative h-56">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+      <!-- Donut chart -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div class="mb-4">
+          <h2 class="font-semibold text-gray-900 dark:text-white text-sm">Traffic Sources</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Distribution by channel</p>
+        </div>
+        <div class="relative h-44 flex items-center justify-center">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="mt-4 space-y-2 text-xs">
+          <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>Organic Search</span><span class="font-medium">42%</span></div>
+          <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Direct</span><span class="font-medium">28%</span></div>
+          <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>Referral</span><span class="font-medium">18%</span></div>
+          <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>Social</span><span class="font-medium">12%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Bar chart + Progress goals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 fade-up fade-up-4">
+      <!-- Bar chart -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="font-semibold text-gray-900 dark:text-white text-sm">Monthly Revenue by Category</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Q1–Q2 2026</p>
+          </div>
+        </div>
+        <div class="relative h-52">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+      <!-- Goals / progress -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div class="mb-4">
+          <h2 class="font-semibold text-gray-900 dark:text-white text-sm">Q2 Goals</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Progress to target</p>
+        </div>
+        <div class="space-y-5">
+          <div>
+            <div class="flex justify-between text-xs mb-1.5"><span class="text-gray-600 dark:text-gray-400">Revenue Target</span><span class="font-semibold text-gray-900 dark:text-white">78%</span></div>
+            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 rounded-full" style="width:78%"></div></div>
+            <p class="text-xs text-gray-400 mt-1">$48.3k of $62k</p>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1.5"><span class="text-gray-600 dark:text-gray-400">User Growth</span><span class="font-semibold text-gray-900 dark:text-white">64%</span></div>
+            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:64%"></div></div>
+            <p class="text-xs text-gray-400 mt-1">3,842 of 6,000</p>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1.5"><span class="text-gray-600 dark:text-gray-400">Report Completion</span><span class="font-semibold text-gray-900 dark:text-white">91%</span></div>
+            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:91%"></div></div>
+            <p class="text-xs text-gray-400 mt-1">91 of 100 reports</p>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1.5"><span class="text-gray-600 dark:text-gray-400">Ticket Resolution</span><span class="font-semibold text-gray-900 dark:text-white">55%</span></div>
+            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:55%"></div></div>
+            <p class="text-xs text-gray-400 mt-1">127 of 230 tickets</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Heatmap calendar -->
+    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 fade-up fade-up-4">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-semibold text-gray-900 dark:text-white text-sm">Activity Heatmap</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Daily activity — last 16 weeks</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-400">
+          <span>Less</span>
+          <div class="flex gap-1">
+            <div class="heat-cell bg-gray-100 dark:bg-gray-800"></div>
+            <div class="heat-cell bg-indigo-200 dark:bg-indigo-900"></div>
+            <div class="heat-cell bg-indigo-300 dark:bg-indigo-700"></div>
+            <div class="heat-cell bg-indigo-500 dark:bg-indigo-500"></div>
+            <div class="heat-cell bg-indigo-700 dark:bg-indigo-300"></div>
+          </div>
+          <span>More</span>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <div id="heatmap" class="flex gap-1 min-w-max"></div>
+      </div>
+      <div class="flex gap-4 mt-3 text-xs text-gray-400">
+        <span>Mon</span><span>Wed</span><span>Fri</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ── Theme ──────────────────────────────────────────────
+  const html = document.documentElement;
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    html.classList.add('dark');
+  }
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    html.classList.toggle('dark');
+    localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    renderCharts();
+  });
+
+  // ── Sidebar ────────────────────────────────────────────
+  const sidebar = document.getElementById('sidebar');
+  const mainEl  = document.getElementById('main-content');
+  const savedSidebar = localStorage.getItem('sidebar');
+  if (savedSidebar === 'closed') { sidebar.classList.add('collapsed'); sidebar.style.width = '64px'; mainEl.style.marginLeft = '64px'; }
+
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    sidebar.style.width = isCollapsed ? '64px' : '240px';
+    mainEl.style.marginLeft = isCollapsed ? '64px' : '240px';
+    localStorage.setItem('sidebar', isCollapsed ? 'closed' : 'open');
+  });
+
+  // ── Mobile sidebar ─────────────────────────────────────
+  const backdrop = document.getElementById('backdrop');
+  function openMobileSidebar()  { sidebar.classList.add('mobile-open'); backdrop.classList.remove('hidden'); }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); backdrop.classList.add('hidden'); }
+  document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => { if (window.innerWidth < 1024) closeMobileSidebar(); }));
+
+  // ── Dropdowns ──────────────────────────────────────────
+  const DROPDOWNS = { 'btn-bell': 'dd-bell', 'btn-avatar': 'dd-avatar' };
+  function closeAll() { Object.values(DROPDOWNS).forEach(id => document.getElementById(id)?.classList.remove('open')); }
+  Object.entries(DROPDOWNS).forEach(([btnId, panelId]) => {
+    document.getElementById(btnId)?.addEventListener('click', e => {
+      e.stopPropagation();
+      const panel = document.getElementById(panelId);
+      const isOpen = panel.classList.contains('open');
+      closeAll();
+      if (!isOpen) panel.classList.add('open');
+    });
+  });
+  document.addEventListener('click', closeAll);
+  document.querySelectorAll('.dd-panel').forEach(p => p.addEventListener('click', e => e.stopPropagation()));
+
+  // ── Range tabs ─────────────────────────────────────────
+  document.querySelectorAll('.range-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.range-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // ── Charts ─────────────────────────────────────────────
+  let lineChart, donutChart, barChart;
+
+  function isDark() { return document.documentElement.classList.contains('dark'); }
+  function gridColor() { return isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'; }
+  function textColor() { return isDark() ? '#9ca3af' : '#6b7280'; }
+
+  function renderCharts() {
+    const dark = isDark();
+
+    // destroy existing
+    [lineChart, donutChart, barChart].forEach(c => c?.destroy());
+
+    const labels30 = Array.from({length:30}, (_,i) => { const d = new Date(2026,3,1); d.setDate(d.getDate()+i); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); });
+    const revenue  = [1200,1400,1100,1600,1800,1500,2100,1900,2300,2000,2400,2200,2600,2800,2500,3000,2700,3100,2900,3300,3100,3500,3200,3700,3400,3800,3600,4000,3800,4200];
+    const users    = [90,110,85,130,145,120,160,150,180,165,190,175,205,220,195,240,215,245,225,255,240,270,250,285,265,295,280,305,290,315];
+
+    // Line chart
+    lineChart = new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: labels30,
+        datasets: [
+          { label:'Revenue', data: revenue, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.08)', tension:0.4, fill:true, pointRadius:0, pointHoverRadius:4, borderWidth:2 },
+          { label:'Users',   data: users,   borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.08)', tension:0.4, fill:true, pointRadius:0, pointHoverRadius:4, borderWidth:2 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false }, tooltip:{ backgroundColor: dark?'#111827':'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8 } },
+        scales:{
+          x:{ ticks:{ color:textColor(), maxTicksLimit:8, font:{size:11} }, grid:{ display:false }, border:{ display:false } },
+          y:{ ticks:{ color:textColor(), font:{size:11} }, grid:{ color:gridColor() }, border:{ display:false } }
+        }
+      }
+    });
+
+    // Donut chart
+    donutChart = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels:['Organic','Direct','Referral','Social'],
+        datasets:[{ data:[42,28,18,12], backgroundColor:['#6366f1','#10b981','#f59e0b','#0ea5e9'], borderWidth:0, hoverOffset:4 }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false, cutout:'72%',
+        plugins:{ legend:{ display:false }, tooltip:{ backgroundColor: dark?'#111827':'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8 } }
+      }
+    });
+
+    // Bar chart
+    barChart = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels:['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets:[
+          { label:'SaaS',     data:[12000,14500,13200,16800,15400,18200], backgroundColor:'#6366f1', borderRadius:4 },
+          { label:'Services', data:[8400,9200,10100,11300,10800,12500],   backgroundColor:'#10b981', borderRadius:4 },
+          { label:'Licenses', data:[3200,3800,4100,4600,4300,5100],       backgroundColor:'#f59e0b', borderRadius:4 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:textColor(), font:{size:11}, boxWidth:12, padding:16 } }, tooltip:{ backgroundColor: dark?'#111827':'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8 } },
+        scales:{
+          x:{ stacked:false, ticks:{ color:textColor(), font:{size:11} }, grid:{ display:false }, border:{ display:false } },
+          y:{ ticks:{ color:textColor(), font:{size:11} }, grid:{ color:gridColor() }, border:{ display:false } }
+        }
+      }
+    });
+  }
+
+  renderCharts();
+
+  // ── Heatmap ────────────────────────────────────────────
+  (function buildHeatmap() {
+    const container = document.getElementById('heatmap');
+    const levels = ['bg-gray-100 dark:bg-gray-800','bg-indigo-200 dark:bg-indigo-900','bg-indigo-300 dark:bg-indigo-700','bg-indigo-500','bg-indigo-700 dark:bg-indigo-300'];
+    for (let w = 0; w < 16; w++) {
+      const col = document.createElement('div');
+      col.className = 'flex flex-col gap-1';
+      for (let d = 0; d < 7; d++) {
+        const cell = document.createElement('div');
+        const level = Math.random() < 0.3 ? 0 : Math.floor(Math.random() * 5);
+        cell.className = `heat-cell ${levels[level]}`;
+        cell.title = `${Math.floor(Math.random()*50)} events`;
+        col.appendChild(cell);
+      }
+      container.appendChild(col);
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<nav class="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex items-center px-4 gap-3">
+  <button class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" onclick="openMobileSidebar()">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a href="dashboard.html" class="hidden lg:flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+    <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">CC</div>
+    CommandCenter
+  </a>
+  <a href="dashboard.html" class="lg:hidden w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">CC</a>
+  <div class="flex-1"></div>
+  <div class="relative">
+    <button id="btn-bell" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+    </button>
+    <div id="dd-bell" class="dd-panel absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
+      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 font-semibold text-sm">Notifications</div>
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span><div><p>Analytics export completed</p><p class="text-gray-400 text-xs mt-0.5">5 min ago</p></div></div>
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span><div><p>User milestone: 4,000 active</p><p class="text-gray-400 text-xs mt-0.5">1 hr ago</p></div></div>
+        <div class="flex gap-3 px-4 py-3 text-sm"><span class="mt-1 w-2 h-2 rounded-full bg-amber-500 shrink-0"></span><div><p>Report #14 needs review</p><p class="text-gray-400 text-xs mt-0.5">3 hr ago</p></div></div>
+      </div>
+      <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-800"><a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">View all notifications</a></div>
+    </div>
+  </div>
+  <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+  <div class="relative">
+    <button id="btn-avatar" class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-semibold flex items-center justify-center">SK</button>
+    <div id="dd-avatar" class="dd-panel absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 text-sm">
+      <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">My Profile</a>
+      <a href="settings.html" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Account Settings</a>
+      <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Switch Workspace</a>
+      <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+      <a href="#" class="block px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800">Sign Out</a>
+    </div>
+  </div>
+  <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+    <svg class="w-5 h-5 text-gray-500 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg class="w-5 h-5 text-gray-500 dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  </button>
+</nav>

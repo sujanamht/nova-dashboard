@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users — CommandCenter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <style>
+    #sidebar { transition: width 250ms ease; }
+    #sidebar .nav-label { transition: opacity 150ms ease, width 150ms ease; }
+    #sidebar.collapsed .nav-label { opacity:0; width:0; overflow:hidden; white-space:nowrap; }
+    #sidebar.collapsed #chevron { transform: rotate(180deg); }
+    @media(max-width:1023px){
+      #sidebar { position:fixed; top:56px; left:0; height:calc(100% - 56px); transform:translateX(-100%); z-index:40; width:240px !important; }
+      #sidebar.mobile-open { transform:translateX(0); }
+      #main-content { margin-left:0 !important; }
+    }
+    .dd-panel { visibility:hidden; opacity:0; transform:translateY(-6px) scale(0.97); transition:opacity 150ms ease,transform 150ms ease,visibility 0s linear 150ms; pointer-events:none; }
+    .dd-panel.open { visibility:visible; opacity:1; transform:translateY(0) scale(1); transition:opacity 150ms ease,transform 150ms ease,visibility 0s; pointer-events:auto; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation:fadeUp 300ms ease forwards; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 font-sans antialiased">
+
+<div id="backdrop" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="closeMobileSidebar()"></div>
+
+<!-- NAVBAR -->
+<nav class="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex items-center px-4 gap-3">
+  <button class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" onclick="openMobileSidebar()">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a href="dashboard.html" class="hidden lg:flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+    <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">CC</div>
+    CommandCenter
+  </a>
+  <a href="dashboard.html" class="lg:hidden w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">CC</a>
+  <div class="flex-1"></div>
+  <div class="relative">
+    <button id="btn-bell" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+    </button>
+    <div id="dd-bell" class="dd-panel absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 text-sm">
+      <div class="px-4 py-2 font-semibold border-b border-gray-100 dark:border-gray-800">Notifications</div>
+      <div class="px-4 py-3 text-gray-500 text-xs">No new notifications</div>
+    </div>
+  </div>
+  <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+  <div class="relative">
+    <button id="btn-avatar" class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-semibold flex items-center justify-center">SK</button>
+    <div id="dd-avatar" class="dd-panel absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 text-sm">
+      <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">My Profile</a>
+      <a href="settings.html" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Settings</a>
+      <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+      <a href="#" class="block px-4 py-2 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800">Sign Out</a>
+    </div>
+  </div>
+  <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+    <svg class="w-5 h-5 text-gray-500 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg class="w-5 h-5 text-gray-500 dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  </button>
+</nav>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="fixed top-14 left-0 h-[calc(100vh-56px)] w-60 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-40 overflow-hidden">
+  <div class="p-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <span class="nav-label text-xs font-semibold uppercase tracking-widest text-gray-400 pl-1">Menu</span>
+    <button id="sidebar-toggle" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+      <svg id="chevron" class="w-4 h-4 text-gray-400 transition-transform duration-250" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+  </div>
+  <nav class="flex-1 p-2 space-y-0.5 overflow-y-auto">
+    <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    <a href="analytics.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span class="nav-label">Analytics</span>
+    </a>
+    <a href="users.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-sm font-medium relative">
+      <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-600 dark:bg-indigo-400 rounded-r"></span>
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m8-5.13a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span class="nav-label">Users</span>
+    </a>
+    <a href="reports.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span class="nav-label">Reports</span>
+    </a>
+    <a href="settings.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium">
+      <svg class="nav-icon w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span class="nav-label">Settings</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main id="main-content" style="margin-left:240px;" class="min-h-screen pt-14 transition-[margin] duration-250">
+  <div class="p-6 max-w-screen-2xl mx-auto space-y-5 fade-up">
+
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Users</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage team members and permissions</p>
+      </div>
+      <button onclick="document.getElementById('invite-modal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Invite User
+      </button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 border-l-4 border-l-indigo-500">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">3,842</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Total Users</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 border-l-4 border-l-emerald-500">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">2,914</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Active</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 border-l-4 border-l-amber-500">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">312</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pending Invite</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 border-l-4 border-l-red-500">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">616</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Inactive</p>
+      </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+      <!-- table toolbar -->
+      <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex gap-1 text-xs font-medium">
+          <button class="tab-btn active px-3 py-1.5 rounded-md bg-indigo-600 text-white" data-tab="all">All</button>
+          <button class="tab-btn px-3 py-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800" data-tab="active">Active</button>
+          <button class="tab-btn px-3 py-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800" data-tab="pending">Pending</button>
+          <button class="tab-btn px-3 py-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800" data-tab="inactive">Inactive</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- search -->
+          <div class="relative">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <input id="search-input" type="text" placeholder="Search users…" class="pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 focus:w-64 transition-[width] duration-200" />
+          </div>
+          <!-- role filter -->
+          <div class="relative">
+            <button id="btn-role-filter" class="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+              Role
+            </button>
+            <div id="dd-role-filter" class="dd-panel absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 p-2 text-sm space-y-0.5">
+              <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"><input type="checkbox" class="accent-indigo-600" checked> Admin</label>
+              <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"><input type="checkbox" class="accent-indigo-600" checked> Manager</label>
+              <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"><input type="checkbox" class="accent-indigo-600" checked> Analyst</label>
+              <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"><input type="checkbox" class="accent-indigo-600" checked> Viewer</label>
+              <div class="pt-1 border-t border-gray-100 dark:border-gray-800">
+                <button class="w-full px-2 py-1.5 text-xs bg-indigo-600 text-white rounded-lg">Apply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- table -->
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] text-sm">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-gray-800 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <th class="px-4 py-3 text-left font-medium">
+                <input type="checkbox" id="select-all" class="accent-indigo-600 rounded" />
+              </th>
+              <th class="px-4 py-3 text-left font-medium">User</th>
+              <th class="px-4 py-3 text-left font-medium hidden sm:table-cell">Role</th>
+              <th class="px-4 py-3 text-left font-medium">Status</th>
+              <th class="px-4 py-3 text-left font-medium hidden md:table-cell">Joined</th>
+              <th class="px-4 py-3 text-left font-medium hidden lg:table-cell">Last Active</th>
+              <th class="px-4 py-3 text-right font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- pagination -->
+      <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+        <span id="pagination-info">Showing 1–10 of 10 results</span>
+        <div class="flex items-center gap-2">
+          <button id="prev-btn" disabled class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800">Prev</button>
+          <span id="page-indicator" class="text-xs">Page 1 of 1</span>
+          <button id="next-btn" disabled class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- INVITE MODAL -->
+<div id="invite-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('invite-modal').classList.add('hidden')"></div>
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Invite User</h2>
+      <button onclick="document.getElementById('invite-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Email Address</label>
+        <input type="email" placeholder="name@company.com" class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Role</label>
+        <select class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+          <option>Viewer</option>
+          <option>Analyst</option>
+          <option>Manager</option>
+          <option>Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Personal Message (optional)</label>
+        <textarea rows="2" placeholder="Welcome to the team…" class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white resize-none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-1">
+      <button onclick="document.getElementById('invite-modal').classList.add('hidden')" class="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">Cancel</button>
+      <button onclick="document.getElementById('invite-modal').classList.add('hidden')" class="flex-1 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('edit-modal').classList.add('hidden')"></div>
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Edit User</h2>
+      <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Full Name</label>
+        <input id="edit-name" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Role</label>
+        <select id="edit-role" class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+          <option>Viewer</option><option>Analyst</option><option>Manager</option><option>Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
+        <select id="edit-status" class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+          <option>Active</option><option>Inactive</option><option>Pending</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-1">
+      <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">Cancel</button>
+      <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Theme ──────────────────────────────────────────────
+const html = document.documentElement;
+const saved = localStorage.getItem('theme');
+if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme:dark)').matches)) html.classList.add('dark');
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  html.classList.toggle('dark');
+  localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+});
+
+// ── Sidebar ────────────────────────────────────────────
+const sidebar = document.getElementById('sidebar');
+const mainEl  = document.getElementById('main-content');
+if (localStorage.getItem('sidebar') === 'closed') { sidebar.classList.add('collapsed'); sidebar.style.width='64px'; mainEl.style.marginLeft='64px'; }
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  const c = sidebar.classList.toggle('collapsed');
+  sidebar.style.width = c ? '64px' : '240px';
+  mainEl.style.marginLeft = c ? '64px' : '240px';
+  localStorage.setItem('sidebar', c ? 'closed' : 'open');
+});
+
+// ── Mobile sidebar ─────────────────────────────────────
+const backdrop = document.getElementById('backdrop');
+function openMobileSidebar()  { sidebar.classList.add('mobile-open'); backdrop.classList.remove('hidden'); }
+function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); backdrop.classList.add('hidden'); }
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => { if (window.innerWidth < 1024) closeMobileSidebar(); }));
+
+// ── Dropdowns ──────────────────────────────────────────
+const DROPDOWNS = { 'btn-bell':'dd-bell', 'btn-avatar':'dd-avatar', 'btn-role-filter':'dd-role-filter' };
+function closeAll() { Object.values(DROPDOWNS).forEach(id => document.getElementById(id)?.classList.remove('open')); }
+Object.entries(DROPDOWNS).forEach(([b, p]) => {
+  document.getElementById(b)?.addEventListener('click', e => { e.stopPropagation(); const panel = document.getElementById(p); const open = panel.classList.contains('open'); closeAll(); if (!open) panel.classList.add('open'); });
+});
+document.addEventListener('click', closeAll);
+document.querySelectorAll('.dd-panel').forEach(p => p.addEventListener('click', e => e.stopPropagation()));
+
+// ── User data ──────────────────────────────────────────
+const USERS = [
+  { id:1, name:'Sarah Kim',     email:'sarah.k@company.com',   role:'Admin',   status:'Active',   joined:'Jan 4, 2024',  last:'2 min ago',    initials:'SK', color:'bg-indigo-500' },
+  { id:2, name:'James Torres',  email:'james.t@company.com',   role:'Manager', status:'Active',   joined:'Mar 12, 2024', last:'1 hr ago',     initials:'JT', color:'bg-emerald-500' },
+  { id:3, name:'Maria Lopes',   email:'maria.l@company.com',   role:'Analyst', status:'Active',   joined:'Jun 20, 2024', last:'3 hr ago',     initials:'ML', color:'bg-sky-500' },
+  { id:4, name:'Admin User',    email:'admin@company.com',     role:'Admin',   status:'Active',   joined:'Jan 1, 2023',  last:'Today',        initials:'AU', color:'bg-gray-500' },
+  { id:5, name:'Chris Park',    email:'chris.p@company.com',   role:'Viewer',  status:'Pending',  joined:'Apr 10, 2026', last:'Never',        initials:'CP', color:'bg-amber-500' },
+  { id:6, name:'Nina Patel',    email:'nina.p@company.com',    role:'Analyst', status:'Active',   joined:'Sep 5, 2024',  last:'Yesterday',    initials:'NP', color:'bg-pink-500' },
+  { id:7, name:'Omar Hassan',   email:'omar.h@company.com',    role:'Manager', status:'Inactive', joined:'Feb 14, 2024', last:'Apr 1, 2026',  initials:'OH', color:'bg-purple-500' },
+  { id:8, name:'Lena Müller',   email:'lena.m@company.com',    role:'Viewer',  status:'Pending',  joined:'Apr 20, 2026', last:'Never',        initials:'LM', color:'bg-rose-500' },
+  { id:9, name:'David Chen',    email:'david.c@company.com',   role:'Analyst', status:'Inactive', joined:'Nov 3, 2023',  last:'Mar 15, 2026', initials:'DC', color:'bg-teal-500' },
+  { id:10,name:'Priya Sharma',  email:'priya.s@company.com',   role:'Viewer',  status:'Active',   joined:'Jan 18, 2026', last:'4 hr ago',     initials:'PS', color:'bg-orange-500' },
+];
+
+const statusBadge = s => ({
+  Active:   'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  Pending:  'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+  Inactive: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+}[s] || '');
+
+const roleBadge = r => ({
+  Admin:   'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400',
+  Manager: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400',
+  Analyst: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+  Viewer:  'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+}[r] || '');
+
+let currentFilter = 'all';
+let searchTerm = '';
+
+function renderTable() {
+  const body = document.getElementById('user-table-body');
+  let filtered = USERS.filter(u => {
+    const matchTab = currentFilter === 'all' || u.status.toLowerCase() === currentFilter;
+    const matchSearch = u.name.toLowerCase().includes(searchTerm) || u.email.toLowerCase().includes(searchTerm);
+    return matchTab && matchSearch;
+  });
+
+  body.innerHTML = filtered.map(u => `
+    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+      <td class="px-4 py-3"><input type="checkbox" class="accent-indigo-600 rounded" /></td>
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full ${u.color} flex items-center justify-center text-white text-xs font-semibold shrink-0">${u.initials}</div>
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white text-sm">${u.name}</p>
+            <p class="text-xs text-gray-400">${u.email}</p>
+          </div>
+        </div>
+      </td>
+      <td class="px-4 py-3 hidden sm:table-cell">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium ${roleBadge(u.role)}">${u.role}</span>
+      </td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(u.status)}">${u.status}</span>
+      </td>
+      <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">${u.joined}</td>
+      <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">${u.last}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center justify-end gap-1">
+          <button onclick="openEdit(${u.id})" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500" title="Remove">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pagination-info').textContent = `Showing 1–${filtered.length} of ${filtered.length} results`;
+}
+
+function openEdit(id) {
+  const u = USERS.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('edit-name').value = u.name;
+  document.getElementById('edit-role').value = u.role;
+  document.getElementById('edit-status').value = u.status;
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+
+// Tab filter
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active','bg-indigo-600','text-white');
+      b.classList.add('text-gray-500');
+    });
+    btn.classList.add('active','bg-indigo-600','text-white');
+    btn.classList.remove('text-gray-500');
+    currentFilter = btn.dataset.tab;
+    renderTable();
+  });
+});
+
+// Search
+document.getElementById('search-input').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase();
+  renderTable();
+});
+
+// Select all
+document.getElementById('select-all').addEventListener('change', e => {
+  document.querySelectorAll('#user-table-body input[type=checkbox]').forEach(cb => cb.checked = e.target.checked);
+});
+
+renderTable();
+</script>
+</body>
+</html>

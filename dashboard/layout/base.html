@@ -1,4 +1,4 @@
-{% load static %}
+{# TODO: restore {% load static %} when Django is running #}
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
@@ -9,7 +9,11 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { transitionDuration: { '250': '250ms' } } }
+      theme: {
+        extend: {
+          transitionDuration: { '250': '250ms' }
+        }
+      }
     }
   </script>
   {% block extra_head %}{% endblock %}
@@ -34,7 +38,8 @@
     {% include "dashboard/layout/footer.html" %}
   </main>
 
-  <script src="{% static 'js/components.js' %}"></script>
+  {# TODO: restore {% static 'js/components.js' %} when Django is running #}
+  <script src="/static/js/components.js"></script>
   {% block extra_scripts %}{% endblock %}
 
 </body>

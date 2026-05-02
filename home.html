@@ -16,10 +16,6 @@
     #bottom-bar { transform: translateY(100%); transition: transform 0.3s ease; }
     #bottom-bar.visible { transform: translateY(0); }
 
-    /* ── Modal ───────────────────────────────────────────── */
-    #modal-backdrop { display: none; }
-    #modal-backdrop.open { display: flex; }
-
     /* ── Category sidebar nav items ──────────────────────── */
     .nav-btn {
       display: flex;
@@ -505,45 +501,13 @@
   <div id="bottom-bar" class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-xl px-6 py-4">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <span id="bar-count" class="text-sm font-medium text-gray-700 dark:text-gray-300">0 components selected</span>
-      <button id="generate-btn"
+      <button id="build-dashboard-btn"
         class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors">
-        Generate Prompt
+        Build Dashboard
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
         </svg>
       </button>
-    </div>
-  </div>
-
-  <!-- ── MODAL BACKDROP ─────────────────────────────────── -->
-  <div id="modal-backdrop" class="fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
-      <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-50">Your Claude Code Prompt</h2>
-        <button id="modal-close"
-          class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-      <div class="px-6 py-4">
-        <textarea id="prompt-output" readonly
-          class="w-full h-64 font-mono text-xs bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-800 dark:text-gray-200 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-      </div>
-      <div class="flex items-center justify-between px-6 pb-6 gap-3">
-        <button id="start-over-btn"
-          class="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-4 py-2 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-          Start Over
-        </button>
-        <button id="copy-btn"
-          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors">
-          <svg id="copy-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-          </svg>
-          <span id="copy-label">Copy to Clipboard</span>
-        </button>
-      </div>
     </div>
   </div>
 
@@ -554,7 +518,6 @@
     // ── STATE ──────────────────────────────────────────────
     const TOTAL  = 26;
     let selected = new Set(JSON.parse(localStorage.getItem('cc_selected') || '[]'));
-    let locked   = new Set(JSON.parse(localStorage.getItem('cc_locked')   || '[]'));
     let activeCategory = 'All';
 
     // ── DARK MODE ──────────────────────────────────────────
@@ -596,7 +559,6 @@
     // ── PERSIST ────────────────────────────────────────────
     function persist() {
       localStorage.setItem('cc_selected', JSON.stringify([...selected]));
-      localStorage.setItem('cc_locked',   JSON.stringify([...locked]));
     }
 
     // ── CARD VISUAL STATE ──────────────────────────────────
@@ -653,97 +615,12 @@
       });
     });
 
-    // ── BUILD PROMPT ───────────────────────────────────────
-    function buildPrompt() {
-      const items = [...selected].map(id => {
-        const card = document.querySelector(`.comp-card[data-id="${id}"]`);
-        return card ? `- ${card.dataset.name} (${card.dataset.cat})` : `- ${id}`;
-      });
-
-      return `Build a dashboard.html for CommandCenter using pure HTML + Tailwind CSS Play CDN, vanilla JS, no frameworks.
-
-## Stack & Conventions
-- Pure HTML + Tailwind CSS via Play CDN (https://cdn.tailwindcss.com), single <script> block, addEventListener only, data-* attributes drive behavior
-- Dark mode via class on <html> element (class="dark"), toggled by button, persisted in localStorage key "theme"
-- Shared component system: navbar loaded via fetch() into #navbar-slot, sidebar into #sidebar-slot, footer into #footer-slot, components.js handles all interactivity
-- Sidebar: 240px expanded / 64px collapsed, persisted in localStorage key "sidebarCollapsed"
-- Theme persisted in localStorage key "theme"
-
-## Design Tokens
-- Background:  gray-50  / dark: gray-950
-- Surface:     white    / dark: gray-900
-- Text:        gray-800 / dark: gray-100
-- Muted:       gray-500 / dark: gray-400
-- Accent:      indigo-600 / dark: indigo-400
-- Border:      gray-200 / dark: gray-700
-- Danger:      red-600  / dark: red-400
-- Cards: rounded-xl, border, shadow-sm, p-5
-- Selected card: indigo-600 border + checkmark badge, 2px ring
-
-## Selected Components
-${items.join('\n')}
-
-## Requirements
-- Build only the selected components above, nothing else
-- Each stat card: rounded-xl, border, shadow-sm, p-5, border-l-4 with accent color per category (Stats: indigo, Charts: violet, Tables: sky, Reports: amber, Widgets: emerald)
-- Charts: use Chart.js via CDN (https://cdn.jsdelivr.net/npm/chart.js)
-- Tables: standard admin dashboard style (thead with gray-50 bg, divide-y rows, overflow-x-auto wrapper)
-- All components dark-mode aware
-- Page header: "Dashboard" h1 + subtitle, with a date/time display top right
-- Responsive: 1 col mobile, 2 col tablet, 3 col desktop grid for cards
-- Single <script> block, no inline JS
-- All placeholder data in one clearly commented block at the top of the script tag labeled // DATA
-- Include the full shared slot structure:
-  <div id="navbar-slot"></div>
-  <div id="backdrop" class="fixed inset-0 z-20 bg-black/40 hidden"></div>
-  <div id="sidebar-slot"></div>
-  <main id="main-content" style="margin-left:240px;" class="min-h-screen pt-14 transition-[margin] duration-250">
-    <!-- components here -->
-    <div id="footer-slot"></div>
-  </main>
-  <script src="components.js"><\/script>`;
-    }
-
-    // ── MODAL ──────────────────────────────────────────────
-    const modalBackdrop = document.getElementById('modal-backdrop');
-    const promptOutput  = document.getElementById('prompt-output');
-
-    document.getElementById('generate-btn').addEventListener('click', () => {
+    // ── BUILD DASHBOARD ────────────────────────────────────
+    document.getElementById('build-dashboard-btn').addEventListener('click', () => {
       if (selected.size === 0) return;
-      promptOutput.value = buildPrompt();
-      modalBackdrop.classList.add('open');
-    });
-
-    document.getElementById('modal-close').addEventListener('click', () => {
-      modalBackdrop.classList.remove('open');
-    });
-
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
-    });
-
-    // ── COPY ───────────────────────────────────────────────
-    document.getElementById('copy-btn').addEventListener('click', () => {
-      navigator.clipboard.writeText(promptOutput.value).then(() => {
-        const label = document.getElementById('copy-label');
-        const icon  = document.getElementById('copy-icon');
-        label.textContent = 'Copied \u2713';
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>';
-        setTimeout(() => {
-          label.textContent = 'Copy to Clipboard';
-          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
-        }, 2000);
-      });
-    });
-
-    // ── START OVER ─────────────────────────────────────────
-    document.getElementById('start-over-btn').addEventListener('click', () => {
-      selected.clear();
-      locked.clear();
-      persist();
-      document.querySelectorAll('.comp-card').forEach(applyCardState);
-      updateCounter();
-      modalBackdrop.classList.remove('open');
+      localStorage.setItem('cc_locked', 'true');
+      localStorage.setItem('cc_selected', JSON.stringify([...selected]));
+      window.location.href = 'dashboard.html';
     });
 
     // ── INIT ───────────────────────────────────────────────
